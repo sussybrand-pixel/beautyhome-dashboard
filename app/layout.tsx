@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "BeautyHome Dashboard",
   description: "Admin dashboard for BeautyHomeBySuzain",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.svg",
   },
 };
 
