@@ -9,14 +9,16 @@ const BLOB_BUCKET = process.env.NEXT_PUBLIC_BLOB_BUCKET || "susan-makeup-artist-
 export const BLOB_BASE =
   process.env.NEXT_PUBLIC_BLOB_BASE_URL || `https://${BLOB_BUCKET}.public.blob.vercel-storage.com`;
 const BLOB_TOKEN =
-  process.env.NEXT_PUBLIC_BLOB_RW_TOKEN || process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+  process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN ||
+  process.env.NEXT_PUBLIC_BLOB_RW_TOKEN ||
+  process.env.BLOB_READ_WRITE_TOKEN;
 
 const hasBlob = Boolean(BLOB_BASE && BLOB_TOKEN);
 
 function blobUrl(key: string) {
   const trimmed = key.startsWith("/") ? key.slice(1) : key;
   const encoded = encodeURI(trimmed);
-  return `${BLOB_BASE}/${encoded}?token=${encodeURIComponent(BLOB_TOKEN || "")}`;
+  return `${BLOB_BASE}/${encoded}`;
 }
 
 // Helper to prefix relative asset paths with the site origin
@@ -50,7 +52,10 @@ export async function updateSection(section: string, data: any) {
   if (hasBlob) {
     const res = await fetch(blobUrl(`content/${section}.json`), {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${BLOB_TOKEN}`,
+      },
       body: JSON.stringify(data),
     });
     if (res.ok) return res.json().catch(() => data);
@@ -83,7 +88,10 @@ export async function uploadImage(file: File) {
     const url = blobUrl(key);
     const res = await fetch(url, {
       method: "PUT",
-      headers: { "Content-Type": file.type || "application/octet-stream" },
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+        Authorization: `Bearer ${BLOB_TOKEN}`,
+      },
       body: file,
     });
     if (!res.ok) {
