@@ -19,25 +19,25 @@ function ImageManager({ onDelete }: ImageManagerProps) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Load existing gallery items from website content
+  // Load existing portfolio items from website content
   useEffect(() => {
     async function loadGallery() {
       try {
         setLoading(true);
         setError("");
-        const data = await getSection("gallery");
-            const mapped =
-              data.items?.map((item: any, idx: number) => ({
-                id: idx + 1,
-                url: withSite(item.image),
-                name: item.label || `Image ${idx + 1}`,
-                section: "Gallery",
-                size: "",
+        const data = await getSection("portfolio");
+        const mapped =
+          data.items?.map((item: any, idx: number) => ({
+            id: idx + 1,
+            url: withSite(item.media || item.image),
+            name: item.title || item.label || `Media ${idx + 1}`,
+            section: item.category || "Portfolio",
+            size: "",
             uploadDate: "",
           })) || [];
         setImages(mapped);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load gallery");
+        setError(err instanceof Error ? err.message : "Failed to load portfolio");
       } finally {
         setLoading(false);
       }
@@ -48,11 +48,13 @@ function ImageManager({ onDelete }: ImageManagerProps) {
   const persistGallery = async (items: typeof images) => {
     const payload = {
       items: items.map((img) => ({
-        image: img.url,
-        label: img.name,
+        media: img.url,
+        category: img.section?.toLowerCase?.() || "portfolio",
+        title: img.name,
+        alt: img.name,
       })),
     };
-    await updateSection("gallery", payload);
+    await updateSection("portfolio", payload);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,8 +94,8 @@ function ImageManager({ onDelete }: ImageManagerProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-foreground text-xl font-semibold">Gallery Manager</h1>
-          <p className="text-muted-foreground">Upload, replace, and manage website images</p>
+          <h1 className="text-foreground text-xl font-semibold">Portfolio Manager</h1>
+          <p className="text-muted-foreground">Upload, replace, and manage website images/GIFs</p>
         </div>
         <label className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg cursor-pointer hover:bg-primary/90">
           <Upload className="w-5 h-5" />

@@ -41,7 +41,7 @@ export default function DashboardApp() {
       <Sidebar currentPage={currentPage} onNavigate={handleNavigate} />
       <Navbar />
 
-      <main className="ml-64 mt-16 p-8 space-y-6">
+      <main className="ml-64 mt-20 p-8 space-y-6">
         {currentPage === "dashboard" && <DashboardHome onNavigate={handleNavigate} />}
         {currentPage === "content" && <ContentManager onNavigate={handleNavigate} />}
         {currentPage === "editor" && (

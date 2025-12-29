@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Emmaville Dashboard",
-  description: "Admin dashboard for Emmaville Academy",
+  title: "BeautyHome Dashboard",
+  description: "Admin dashboard for BeautyHomeBySuzain",
   icons: {
-    icon: "/favicon.jpg",
+    icon: "/favicon.ico",
   },
 };
 

@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardContent } from "./Card";
 import { Button } from "./Button";
-import { Edit, Home, Info, GraduationCap, Phone } from "lucide-react";
+import { Edit, Home, Info, Sparkles, Phone, Gift, Images } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { withSite } from "@/lib/api";
 
@@ -13,35 +13,51 @@ interface ContentManagerProps {
 const sections = [
   {
     id: "home",
-    title: "Home",
-    description: "Hero slides and homepage highlights",
-    preview: "Nurturing Curious Minds and Building Character",
+    title: "Home & Hero",
+    description: "Hero carousel, taglines, and CTAs",
+    preview: "Luxury bridal & glam makeup artist",
     icon: Home,
-    image: "/images/hero-campus.jpg",
+    image: "/assets/IMG-20251227-WA0030.jpg",
   },
   {
     id: "about",
-    title: "About",
-    description: "School history, mission, vision, and values",
-    preview: "Private K-12 academy dedicated to excellence",
+    title: "About & Locations",
+    description: "Bio, cities covered, travel note, training",
+    preview: "Available in London, Manchester, Birmingham, Leeds, Sheffield, Bradford",
     icon: Info,
-    image: "/images/about-campus.jpg",
+    image: "/assets/IMG-20251227-WA0018.jpg",
   },
   {
-    id: "admissions",
-    title: "Admissions",
-    description: "Entry requirements, OSSD pathway, and offers",
-    preview: "OSSD Grade 12 pathway, January 2026 intake",
-    icon: GraduationCap,
-    image: "/images/hero-campus.jpg",
+    id: "services",
+    title: "Services",
+    description: "Service offerings, features, and imagery",
+    preview: "Bridal Glam · Birthday Glam · Event Glam · Editorial",
+    icon: Sparkles,
+    image: "/assets/IMG-20251227-WA0036.jpg",
+  },
+  {
+    id: "packages",
+    title: "Packages",
+    description: "Package pricing, deliverables, availability",
+    preview: "Bridal Package · Birthday Glam Package · Exclusive Birthday Shoot",
+    icon: Gift,
+    image: "/assets/IMG-20251227-WA0028.jpg",
+  },
+  {
+    id: "portfolio",
+    title: "Portfolio",
+    description: "All work (bridal, birthday, glam, editorial)",
+    preview: "Photos + GIF reels categorized for the site",
+    icon: Images,
+    image: "/assets/IMG-20251227-WA0032.jpg",
   },
   {
     id: "contact",
-    title: "Contact",
-    description: "Address, phone, email, map",
-    preview: "BX4 3RD Avenue, Port Harcourt | +234 818 628 1225",
+    title: "Contact & Social",
+    description: "Phone, WhatsApp, email, Instagram, CTAs",
+    preview: "+44 7523 992614 | @beautyhomebysuzain",
     icon: Phone,
-    image: "/images/about-campus.jpg",
+    image: "/assets/IMG-20251227-WA0016.jpg",
   },
 ];
 

@@ -10,7 +10,7 @@ export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'content', label: 'Content Manager', icon: FileText },
-    { id: 'images', label: 'Gallery Manager', icon: Image },
+    { id: 'images', label: 'Portfolio Manager', icon: Image },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -20,10 +20,10 @@ export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center shadow-md">
-            <span className="text-primary font-bold">EA</span>
+            <span className="text-primary font-bold">BH</span>
           </div>
           <div>
-            <h2 className="text-white">Emmaville Academy</h2>
+            <h2 className="text-white">BeautyHomeBySuzain</h2>
             <p className="text-xs text-sidebar-foreground/70">Admin Dashboard</p>
           </div>
         </div>

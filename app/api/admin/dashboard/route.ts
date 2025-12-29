@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { SITE_ORIGIN } from "@/lib/api";
 
-const sections = ["home", "about", "admissions", "gallery", "contact", "settings"];
+const sections = ["home", "about", "services", "packages", "portfolio", "contact", "settings"];
 
 export async function GET() {
   const payload: {
@@ -28,7 +28,7 @@ export async function GET() {
       const data = await res.json();
       const lm = data?._lastModified || new Date().toISOString();
       payload.sections.push({ id: section, lastModified: lm });
-      if (section === "gallery" && Array.isArray(data?.items)) {
+      if (section === "portfolio" && Array.isArray(data?.items)) {
         payload.imagesCount = data.items.length;
       }
       if (lm && (!latest || lm > latest)) latest = lm;

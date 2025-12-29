@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-card shadow-xl rounded-2xl p-8 border border-border">
         <h1 className="text-2xl text-primary font-semibold mb-2">Admin Login</h1>
         <p className="text-muted-foreground mb-6">
-          Sign in to manage Emmaville Academy website content.
+          Sign in to manage BeautyHomeBySuzain website content.
         </p>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
@@ -48,7 +48,7 @@ export default function LoginPage() {
             <Input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="emma ville academy"
+              placeholder="beautyhome admin"
               required
             />
           </div>

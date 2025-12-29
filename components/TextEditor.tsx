@@ -1,33 +1,33 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardHeader, CardContent } from "./Card";
 import { Button } from "./Button";
 import { Input, Textarea } from "./Input";
 import { ArrowLeft, Save, X, Eye, Plus, Trash2 } from "lucide-react";
-import { getSection, updateSection, uploadImage, withSite } from "@/lib/api";
+import { getSection, updateSection, uploadImage } from "@/lib/api";
 
-interface TextEditorProps {
-  section?: string;
+type SectionId = "home" | "about" | "services" | "packages" | "portfolio" | "contact" | string;
+
+type TextEditorProps = {
+  section?: SectionId;
   onNavigate: (page: string) => void;
   onSave: () => void;
-}
+};
 
 const sectionTitles: Record<string, string> = {
   home: "Home",
   about: "About",
-  admissions: "Admissions",
-  gallery: "Gallery",
+  services: "Services",
+  packages: "Packages",
+  portfolio: "Portfolio",
   contact: "Contact",
 };
 
-export default function TextEditor({
-  section = "home",
-  onNavigate,
-  onSave,
-}: TextEditorProps) {
+const categoryOptions = ["bridal", "birthday", "glam", "editorial"];
+
+export default function TextEditor({ section = "home", onNavigate, onSave }: TextEditorProps) {
   const [rawJson, setRawJson] = useState("{}");
-  const [prettyJson, setPrettyJson] = useState("");
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function TextEditor({
     try {
       setSaving(true);
       const res = await uploadImage(file);
-      const url = withSite(res.url || res?.data?.url || "");
+      const url = res.url || res?.data?.url || "";
       pendingSetter(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
@@ -63,11 +63,10 @@ export default function TextEditor({
       try {
         setLoading(true);
         setError("");
-        const data = await getSection(section);
-        const pretty = JSON.stringify(data, null, 2);
-        setData(data);
+        const incoming = await getSection(section);
+        const pretty = JSON.stringify(incoming, null, 2);
+        setData(incoming);
         setRawJson(pretty);
-        setPrettyJson(pretty);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load content");
       } finally {
@@ -91,13 +90,34 @@ export default function TextEditor({
     }
   };
 
-  // Form editors -------------------------------------------------------------
   const HomeForm = useMemo(() => {
     if (!data) return null;
-    const slides = data?.hero?.slides || [];
-    const programs = data?.programs || [];
+    const hero = data?.hero || {};
+    const slides = hero.slides || [];
+    const highlights = data?.highlights || [];
     return (
       <div className="space-y-8">
+        <Card>
+          <CardContent className="space-y-3">
+            <h4 className="font-semibold">Hero Heading</h4>
+            <Input
+              label="Eyebrow / Overline"
+              value={hero.eyebrow || ""}
+              onChange={(e) => setData({ ...data, hero: { ...hero, eyebrow: e.target.value } })}
+            />
+            <Input
+              label="Headline"
+              value={hero.title || ""}
+              onChange={(e) => setData({ ...data, hero: { ...hero, title: e.target.value } })}
+            />
+            <Textarea
+              label="Subheadline"
+              value={hero.subtitle || ""}
+              onChange={(e) => setData({ ...data, hero: { ...hero, subtitle: e.target.value } })}
+            />
+          </CardContent>
+        </Card>
+
         <div className="space-y-4">
           <h4 className="text-lg font-semibold text-foreground">Hero Slides</h4>
           {slides.map((slide: any, idx: number) => (
@@ -110,7 +130,7 @@ export default function TextEditor({
                     size="sm"
                     onClick={() => {
                       const next = slides.filter((_: any, i: number) => i !== idx);
-                      setData({ ...data, hero: { ...data.hero, slides: next } });
+                      setData({ ...data, hero: { ...hero, slides: next } });
                     }}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -122,16 +142,52 @@ export default function TextEditor({
                   onChange={(e) => {
                     const next = [...slides];
                     next[idx] = { ...next[idx], title: e.target.value };
-                    setData({ ...data, hero: { ...data.hero, slides: next } });
+                    setData({ ...data, hero: { ...hero, slides: next } });
+                  }}
+                />
+                <Textarea
+                  label="Subtitle"
+                  value={slide.subtitle || ""}
+                  onChange={(e) => {
+                    const next = [...slides];
+                    next[idx] = { ...next[idx], subtitle: e.target.value };
+                    setData({ ...data, hero: { ...hero, slides: next } });
                   }}
                 />
                 <Input
-                  label="Label"
-                  value={slide.label || ""}
+                  label="Primary CTA Label"
+                  value={slide.primaryLabel || ""}
                   onChange={(e) => {
                     const next = [...slides];
-                    next[idx] = { ...next[idx], label: e.target.value };
-                    setData({ ...data, hero: { ...data.hero, slides: next } });
+                    next[idx] = { ...next[idx], primaryLabel: e.target.value };
+                    setData({ ...data, hero: { ...hero, slides: next } });
+                  }}
+                />
+                <Input
+                  label="Primary CTA Link"
+                  value={slide.primaryHref || ""}
+                  onChange={(e) => {
+                    const next = [...slides];
+                    next[idx] = { ...next[idx], primaryHref: e.target.value };
+                    setData({ ...data, hero: { ...hero, slides: next } });
+                  }}
+                />
+                <Input
+                  label="Secondary CTA Label"
+                  value={slide.secondaryLabel || ""}
+                  onChange={(e) => {
+                    const next = [...slides];
+                    next[idx] = { ...next[idx], secondaryLabel: e.target.value };
+                    setData({ ...data, hero: { ...hero, slides: next } });
+                  }}
+                />
+                <Input
+                  label="Secondary CTA Link"
+                  value={slide.secondaryHref || ""}
+                  onChange={(e) => {
+                    const next = [...slides];
+                    next[idx] = { ...next[idx], secondaryHref: e.target.value };
+                    setData({ ...data, hero: { ...hero, slides: next } });
                   }}
                 />
                 <Input
@@ -140,7 +196,7 @@ export default function TextEditor({
                   onChange={(e) => {
                     const next = [...slides];
                     next[idx] = { ...next[idx], image: e.target.value };
-                    setData({ ...data, hero: { ...data.hero, slides: next } });
+                    setData({ ...data, hero: { ...hero, slides: next } });
                   }}
                   rightSlot={
                     <Button
@@ -150,7 +206,7 @@ export default function TextEditor({
                         triggerUpload((url) => {
                           const next = [...slides];
                           next[idx] = { ...next[idx], image: url };
-                          setData({ ...data, hero: { ...data.hero, slides: next } });
+                          setData({ ...data, hero: { ...hero, slides: next } });
                         })
                       }
                     >
@@ -167,9 +223,17 @@ export default function TextEditor({
             onClick={() => {
               const next = [
                 ...slides,
-                { image: "", title: "New Slide", label: "Label" },
+                {
+                  title: "New Slide",
+                  subtitle: "",
+                  primaryLabel: "Book Appointment",
+                  primaryHref: "https://wa.me/447523992614",
+                  secondaryLabel: "View Packages",
+                  secondaryHref: "/packages",
+                  image: "",
+                },
               ];
-              setData({ ...data, hero: { ...data.hero, slides: next } });
+              setData({ ...data, hero: { ...hero, slides: next } });
             }}
           >
             <Plus className="w-4 h-4" />
@@ -178,18 +242,18 @@ export default function TextEditor({
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-foreground">Programs</h4>
-          {programs.map((p: any, idx: number) => (
+          <h4 className="text-lg font-semibold text-foreground">Highlights</h4>
+          {highlights.map((item: any, idx: number) => (
             <Card key={idx}>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">Program {idx + 1}</p>
+                  <p className="text-sm text-muted-foreground">Highlight {idx + 1}</p>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const next = programs.filter((_: any, i: number) => i !== idx);
-                      setData({ ...data, programs: next });
+                      const next = highlights.filter((_: any, i: number) => i !== idx);
+                      setData({ ...data, highlights: next });
                     }}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -197,53 +261,20 @@ export default function TextEditor({
                 </div>
                 <Input
                   label="Title"
-                  value={p.title || ""}
+                  value={item.title || ""}
                   onChange={(e) => {
-                    const next = [...programs];
+                    const next = [...highlights];
                     next[idx] = { ...next[idx], title: e.target.value };
-                    setData({ ...data, programs: next });
+                    setData({ ...data, highlights: next });
                   }}
                 />
                 <Textarea
                   label="Description"
-                  value={p.description || ""}
+                  value={item.description || ""}
                   onChange={(e) => {
-                    const next = [...programs];
+                    const next = [...highlights];
                     next[idx] = { ...next[idx], description: e.target.value };
-                    setData({ ...data, programs: next });
-                  }}
-                />
-                <Input
-                  label="Image URL"
-                  value={p.image || ""}
-                  onChange={(e) => {
-                    const next = [...programs];
-                    next[idx] = { ...next[idx], image: e.target.value };
-                    setData({ ...data, programs: next });
-                  }}
-                  rightSlot={
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() =>
-                        triggerUpload((url) => {
-                          const next = [...programs];
-                          next[idx] = { ...next[idx], image: url };
-                          setData({ ...data, programs: next });
-                        })
-                      }
-                    >
-                      Upload
-                    </Button>
-                  }
-                />
-                <Input
-                  label="Label (alt text)"
-                  value={p.label || ""}
-                  onChange={(e) => {
-                    const next = [...programs];
-                    next[idx] = { ...next[idx], label: e.target.value };
-                    setData({ ...data, programs: next });
+                    setData({ ...data, highlights: next });
                   }}
                 />
               </CardContent>
@@ -253,110 +284,253 @@ export default function TextEditor({
             variant="secondary"
             size="sm"
             onClick={() => {
-              const next = [
-                ...programs,
-                { title: "New Program", description: "", image: "", label: "" },
-              ];
-              setData({ ...data, programs: next });
+              const next = [...highlights, { title: "New highlight", description: "" }];
+              setData({ ...data, highlights: next });
             }}
           >
             <Plus className="w-4 h-4" />
-            Add Program
+            Add Highlight
           </Button>
         </div>
       </div>
     );
   }, [data]);
 
-  const AdmissionsForm = useMemo(() => {
+  const ServicesForm = useMemo(() => {
     if (!data) return null;
     const hero = data?.hero || {};
-    const osdd = data?.osdd || {};
-    const intake = data?.intake || {};
-    const health = data?.health || {};
+    const services = data?.services || [];
     return (
       <div className="space-y-6">
         <Card>
           <CardContent className="space-y-3">
-            <h4 className="font-semibold">Hero</h4>
+            <h4 className="font-semibold">Services Hero</h4>
             <Input
               label="Title"
               value={hero.title || ""}
               onChange={(e) => setData({ ...data, hero: { ...hero, title: e.target.value } })}
             />
             <Textarea
-              label="Body"
-              value={hero.body || ""}
-              onChange={(e) => setData({ ...data, hero: { ...hero, body: e.target.value } })}
+              label="Subtitle"
+              value={hero.subtitle || ""}
+              onChange={(e) => setData({ ...data, hero: { ...hero, subtitle: e.target.value } })}
             />
-            <Input
-              label="Image URL"
-              value={hero.image || ""}
-              onChange={(e) => setData({ ...data, hero: { ...hero, image: e.target.value } })}
-              rightSlot={
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    triggerUpload((url) =>
-                      setData({ ...data, hero: { ...hero, image: url } }),
-                    )
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <h4 className="text-lg font-semibold text-foreground">Services</h4>
+          {services.map((svc: any, idx: number) => (
+            <Card key={idx}>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-muted-foreground">Service {idx + 1}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const next = services.filter((_: any, i: number) => i !== idx);
+                      setData({ ...data, services: next });
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Input
+                  label="Title"
+                  value={svc.title || ""}
+                  onChange={(e) => {
+                    const next = [...services];
+                    next[idx] = { ...next[idx], title: e.target.value };
+                    setData({ ...data, services: next });
+                  }}
+                />
+                <Textarea
+                  label="Description"
+                  value={svc.description || ""}
+                  onChange={(e) => {
+                    const next = [...services];
+                    next[idx] = { ...next[idx], description: e.target.value };
+                    setData({ ...data, services: next });
+                  }}
+                />
+                <Textarea
+                  label="Features (one per line)"
+                  value={(svc.features || []).join("\n")}
+                  onChange={(e) => {
+                    const lines = e.target.value.split("\n").filter(Boolean);
+                    const next = [...services];
+                    next[idx] = { ...next[idx], features: lines };
+                    setData({ ...data, services: next });
+                  }}
+                />
+                <Input
+                  label="Image URL"
+                  value={svc.image || ""}
+                  onChange={(e) => {
+                    const next = [...services];
+                    next[idx] = { ...next[idx], image: e.target.value };
+                    setData({ ...data, services: next });
+                  }}
+                  rightSlot={
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        triggerUpload((url) => {
+                          const next = [...services];
+                          next[idx] = { ...next[idx], image: url };
+                          setData({ ...data, services: next });
+                        })
+                      }
+                    >
+                      Upload
+                    </Button>
                   }
+                />
+              </CardContent>
+            </Card>
+          ))}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              const next = [
+                ...services,
+                { title: "New Service", description: "", features: [], image: "" },
+              ];
+              setData({ ...data, services: next });
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            Add Service
+          </Button>
+        </div>
+      </div>
+    );
+  }, [data]);
+
+  const PackagesForm = useMemo(() => {
+    if (!data) return null;
+    const packages = data?.packages || [];
+    return (
+      <div className="space-y-4">
+        {packages.map((pkg: any, idx: number) => (
+          <Card key={idx}>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Package {idx + 1}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const next = packages.filter((_: any, i: number) => i !== idx);
+                    setData({ ...data, packages: next });
+                  }}
                 >
-                  Upload
+                  <Trash2 className="w-4 h-4" />
                 </Button>
-              }
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="space-y-3">
-            <h4 className="font-semibold">OSSD Pathway</h4>
-            <Input
-              label="Heading"
-              value={osdd.heading || ""}
-              onChange={(e) => setData({ ...data, osdd: { ...osdd, heading: e.target.value } })}
-            />
-            <Textarea
-              label="Body"
-              value={osdd.body || ""}
-              onChange={(e) => setData({ ...data, osdd: { ...osdd, body: e.target.value } })}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="space-y-3">
-            <h4 className="font-semibold">Intake</h4>
-            <Input
-              label="Title"
-              value={intake.title || ""}
-              onChange={(e) => setData({ ...data, intake: { ...intake, title: e.target.value } })}
-            />
-            <Input
-              label="Offer"
-              value={intake.offer || ""}
-              onChange={(e) => setData({ ...data, intake: { ...intake, offer: e.target.value } })}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="space-y-3">
-            <h4 className="font-semibold">Health / Inoculation</h4>
-            <Input
-              label="Title"
-              value={health.title || ""}
-              onChange={(e) => setData({ ...data, health: { ...health, title: e.target.value } })}
-            />
-            <Textarea
-              label="Body"
-              value={health.body || ""}
-              onChange={(e) => setData({ ...data, health: { ...health, body: e.target.value } })}
-            />
-          </CardContent>
-        </Card>
+              </div>
+              <Input
+                label="Name"
+                value={pkg.name || ""}
+                onChange={(e) => {
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], name: e.target.value };
+                  setData({ ...data, packages: next });
+                }}
+              />
+              <Input
+                label="Price"
+                value={pkg.price || ""}
+                onChange={(e) => {
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], price: e.target.value };
+                  setData({ ...data, packages: next });
+                }}
+              />
+              <Input
+                label="Original Price / Subtext"
+                value={pkg.originalPrice || ""}
+                onChange={(e) => {
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], originalPrice: e.target.value };
+                  setData({ ...data, packages: next });
+                }}
+              />
+              <Input
+                label="Badge"
+                value={pkg.badge || ""}
+                onChange={(e) => {
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], badge: e.target.value };
+                  setData({ ...data, packages: next });
+                }}
+              />
+              <Textarea
+                label="Features (one per line)"
+                value={(pkg.features || []).join("\n")}
+                onChange={(e) => {
+                  const lines = e.target.value.split("\n").filter(Boolean);
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], features: lines };
+                  setData({ ...data, packages: next });
+                }}
+              />
+              <Textarea
+                label="Deliverables (one per line)"
+                value={(pkg.deliverables || []).join("\n")}
+                onChange={(e) => {
+                  const lines = e.target.value.split("\n").filter(Boolean);
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], deliverables: lines };
+                  setData({ ...data, packages: next });
+                }}
+              />
+              <Input
+                label="Availability"
+                value={pkg.availability || ""}
+                onChange={(e) => {
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], availability: e.target.value };
+                  setData({ ...data, packages: next });
+                }}
+              />
+              <Input
+                label="Note"
+                value={pkg.note || ""}
+                onChange={(e) => {
+                  const next = [...packages];
+                  next[idx] = { ...next[idx], note: e.target.value };
+                  setData({ ...data, packages: next });
+                }}
+              />
+            </CardContent>
+          </Card>
+        ))}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            const next = [
+              ...packages,
+              {
+                name: "New Package",
+                price: "",
+                originalPrice: "",
+                badge: "",
+                features: [],
+                deliverables: [],
+                availability: "",
+                note: "",
+              },
+            ];
+            setData({ ...data, packages: next });
+          }}
+        >
+          <Plus className="w-4 h-4" />
+          Add Package
+        </Button>
       </div>
     );
   }, [data]);
@@ -364,7 +538,8 @@ export default function TextEditor({
   const AboutForm = useMemo(() => {
     if (!data) return null;
     const about = data?.about || {};
-    const values = data?.values || [];
+    const locations = data?.locations || [];
+    const training = data?.training || [];
     return (
       <div className="space-y-6">
         <Card>
@@ -375,20 +550,23 @@ export default function TextEditor({
               value={about.title || ""}
               onChange={(e) => setData({ ...data, about: { ...about, title: e.target.value } })}
             />
+            <Input
+              label="Tagline"
+              value={about.tagline || ""}
+              onChange={(e) => setData({ ...data, about: { ...about, tagline: e.target.value } })}
+            />
             <Textarea
-              label="Description"
-              value={about.description || ""}
-              onChange={(e) =>
-                setData({ ...data, about: { ...about, description: e.target.value } })
-              }
+              label="Bio"
+              value={about.bio || ""}
+              onChange={(e) => setData({ ...data, about: { ...about, bio: e.target.value } })}
+            />
+            <Textarea
+              label="Travel Note"
+              value={about.travelNote || ""}
+              onChange={(e) => setData({ ...data, about: { ...about, travelNote: e.target.value } })}
             />
             <Input
-              label="Quote"
-              value={about.quote || ""}
-              onChange={(e) => setData({ ...data, about: { ...about, quote: e.target.value } })}
-            />
-            <Input
-              label="Image URL"
+              label="Hero Image"
               value={about.image || ""}
               onChange={(e) => setData({ ...data, about: { ...about, image: e.target.value } })}
               rightSlot={
@@ -396,9 +574,7 @@ export default function TextEditor({
                   variant="secondary"
                   size="sm"
                   onClick={() =>
-                    triggerUpload((url) =>
-                      setData({ ...data, about: { ...about, image: url } }),
-                    )
+                    triggerUpload((url) => setData({ ...data, about: { ...about, image: url } }))
                   }
                 >
                   Upload
@@ -406,67 +582,47 @@ export default function TextEditor({
               }
             />
             <Input
-              label="Image Alt"
+              label="Hero Alt"
               value={about.imageAlt || ""}
-              onChange={(e) =>
-                setData({ ...data, about: { ...about, imageAlt: e.target.value } })
-              }
+              onChange={(e) => setData({ ...data, about: { ...about, imageAlt: e.target.value } })}
             />
           </CardContent>
         </Card>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-foreground">Values</h4>
-          {values.map((v: any, idx: number) => (
+          <h4 className="text-lg font-semibold text-foreground">Locations (one per line)</h4>
+          <Textarea
+            label="Cities"
+            value={locations.join("\n")}
+            onChange={(e) => setData({ ...data, locations: e.target.value.split("\n").filter(Boolean) })}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h4 className="text-lg font-semibold text-foreground">Training & Courses</h4>
+          {training.map((item: string, idx: number) => (
             <Card key={idx}>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">Value {idx + 1}</p>
+                  <p className="text-sm text-muted-foreground">Item {idx + 1}</p>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const next = values.filter((_: any, i: number) => i !== idx);
-                      setData({ ...data, values: next });
+                      const next = training.filter((_: any, i: number) => i !== idx);
+                      setData({ ...data, training: next });
                     }}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
                 <Input
-                  label="Title"
-                  value={v.title || ""}
+                  label="Text"
+                  value={item}
                   onChange={(e) => {
-                    const next = [...values];
-                    next[idx] = { ...next[idx], title: e.target.value };
-                    setData({ ...data, values: next });
-                  }}
-                />
-                <Textarea
-                  label="Description"
-                  value={v.description || ""}
-                  onChange={(e) => {
-                    const next = [...values];
-                    next[idx] = { ...next[idx], description: e.target.value };
-                    setData({ ...data, values: next });
-                  }}
-                />
-                <Input
-                  label="Icon (target/eye/heart)"
-                  value={v.icon || ""}
-                  onChange={(e) => {
-                    const next = [...values];
-                    next[idx] = { ...next[idx], icon: e.target.value };
-                    setData({ ...data, values: next });
-                  }}
-                />
-                <Input
-                  label="Color (e.g. emerald)"
-                  value={v.color || ""}
-                  onChange={(e) => {
-                    const next = [...values];
-                    next[idx] = { ...next[idx], color: e.target.value };
-                    setData({ ...data, values: next });
+                    const next = [...training];
+                    next[idx] = e.target.value;
+                    setData({ ...data, training: next });
                   }}
                 />
               </CardContent>
@@ -475,18 +631,127 @@ export default function TextEditor({
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => {
-              const next = [
-                ...values,
-                { title: "New Value", description: "", icon: "target", color: "emerald" },
-              ];
-              setData({ ...data, values: next });
-            }}
+            onClick={() => setData({ ...data, training: [...training, "New training offer"] })}
           >
             <Plus className="w-4 h-4" />
-            Add Value
+            Add Training Item
           </Button>
         </div>
+      </div>
+    );
+  }, [data]);
+
+  const PortfolioForm = useMemo(() => {
+    if (!data) return null;
+    const items = data?.items || [];
+    return (
+      <div className="space-y-4">
+        {items.map((item: any, idx: number) => (
+          <Card key={idx}>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Item {idx + 1}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const next = items.filter((_: any, i: number) => i !== idx);
+                    setData({ ...data, items: next });
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+              <Input
+                label="Title"
+                value={item.title || ""}
+                onChange={(e) => {
+                  const next = [...items];
+                  next[idx] = { ...next[idx], title: e.target.value };
+                  setData({ ...data, items: next });
+                }}
+              />
+              <Textarea
+                label="Description"
+                value={item.description || ""}
+                onChange={(e) => {
+                  const next = [...items];
+                  next[idx] = { ...next[idx], description: e.target.value };
+                  setData({ ...data, items: next });
+                }}
+              />
+              <label className="text-sm text-foreground">Category</label>
+              <select
+                className="w-full rounded border border-border bg-background p-2"
+                value={item.category || "bridal"}
+                onChange={(e) => {
+                  const next = [...items];
+                  next[idx] = { ...next[idx], category: e.target.value };
+                  setData({ ...data, items: next });
+                }}
+              >
+                {categoryOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+              <Input
+                label="Media URL (image or GIF)"
+                value={item.media || item.image || ""}
+                onChange={(e) => {
+                  const next = [...items];
+                  next[idx] = { ...next[idx], media: e.target.value };
+                  setData({ ...data, items: next });
+                }}
+                rightSlot={
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      triggerUpload((url) => {
+                        const next = [...items];
+                        next[idx] = { ...next[idx], media: url };
+                        setData({ ...data, items: next });
+                      })
+                    }
+                  >
+                    Upload
+                  </Button>
+                }
+              />
+              <Input
+                label="Alt Text"
+                value={item.alt || ""}
+                onChange={(e) => {
+                  const next = [...items];
+                  next[idx] = { ...next[idx], alt: e.target.value };
+                  setData({ ...data, items: next });
+                }}
+              />
+            </CardContent>
+          </Card>
+        ))}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            const next = [
+              ...items,
+              {
+                title: "New Portfolio Item",
+                description: "",
+                category: "bridal",
+                media: "",
+                alt: "",
+              },
+            ];
+            setData({ ...data, items: next });
+          }}
+        >
+          <Plus className="w-4 h-4" />
+          Add Portfolio Item
+        </Button>
       </div>
     );
   }, [data]);
@@ -497,18 +762,20 @@ export default function TextEditor({
     const social = data?.social || {};
     return (
       <div className="space-y-4">
-        <Textarea
-          label="Address (one line per row)"
-          value={addressLines}
-          onChange={(e) => {
-            const lines = e.target.value.split("\n");
-            setData({ ...data, address: { ...(data.address || {}), lines } });
-          }}
-        />
         <Input
           label="Phone"
           value={data?.phone || ""}
           onChange={(e) => setData({ ...data, phone: e.target.value })}
+        />
+        <Input
+          label="WhatsApp Number"
+          value={data?.whatsapp || ""}
+          onChange={(e) => setData({ ...data, whatsapp: e.target.value })}
+        />
+        <Input
+          label="WhatsApp Link"
+          value={data?.whatsappLink || ""}
+          onChange={(e) => setData({ ...data, whatsappLink: e.target.value })}
         />
         <Input
           label="Email"
@@ -518,21 +785,30 @@ export default function TextEditor({
         <Input
           label="Instagram URL"
           value={social.instagram || ""}
-          onChange={(e) =>
-            setData({ ...data, social: { ...social, instagram: e.target.value } })
-          }
+          onChange={(e) => setData({ ...data, social: { ...social, instagram: e.target.value } })}
         />
         <Input
-          label="Facebook URL"
-          value={social.facebook || ""}
-          onChange={(e) =>
-            setData({ ...data, social: { ...social, facebook: e.target.value } })
-          }
+          label="Booking CTA Label"
+          value={data?.ctaLabel || ""}
+          onChange={(e) => setData({ ...data, ctaLabel: e.target.value })}
         />
         <Input
-          label="Map Embed URL"
-          value={data?.mapEmbedUrl || ""}
-          onChange={(e) => setData({ ...data, mapEmbedUrl: e.target.value })}
+          label="Booking CTA Link"
+          value={data?.ctaLink || ""}
+          onChange={(e) => setData({ ...data, ctaLink: e.target.value })}
+        />
+        <Textarea
+          label="Address (one line per row)"
+          value={addressLines}
+          onChange={(e) => {
+            const lines = e.target.value.split("\n");
+            setData({ ...data, address: { ...(data.address || {}), lines } });
+          }}
+        />
+        <Textarea
+          label="Travel Note"
+          value={data?.travelNote || ""}
+          onChange={(e) => setData({ ...data, travelNote: e.target.value })}
         />
       </div>
     );
@@ -543,10 +819,14 @@ export default function TextEditor({
     switch (section) {
       case "home":
         return HomeForm;
-      case "admissions":
-        return AdmissionsForm;
+      case "services":
+        return ServicesForm;
+      case "packages":
+        return PackagesForm;
       case "about":
         return AboutForm;
+      case "portfolio":
+        return PortfolioForm;
       case "contact":
         return ContactForm;
       default:
@@ -556,7 +836,7 @@ export default function TextEditor({
           </p>
         );
     }
-  }, [section, data, HomeForm, AdmissionsForm, AboutForm, ContactForm]);
+  }, [section, data, HomeForm, ServicesForm, PackagesForm, AboutForm, PortfolioForm, ContactForm]);
 
   return (
     <div className="space-y-6">
@@ -566,12 +846,8 @@ export default function TextEditor({
       </Button>
 
       <div className="bg-gradient-to-r from-primary to-primary/90 rounded-xl p-8 text-white shadow-lg">
-        <h1 className="text-white mb-2">
-          Edit {sectionTitles[section] || section} Content
-        </h1>
-        <p className="text-white/90">
-          Use the form editor or switch to JSON for advanced edits.
-        </p>
+        <h1 className="text-white mb-2">Edit {sectionTitles[section] || section} Content</h1>
+        <p className="text-white/90">Use the form editor or switch to JSON for advanced edits.</p>
         <div className="mt-3 flex gap-2">
           <Button
             variant={mode === "form" ? "secondary" : "ghost"}
@@ -600,12 +876,7 @@ export default function TextEditor({
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 {formForSection}
                 <div className="flex gap-3 pt-2">
-                  <Button
-                    variant="primary"
-                    className="flex-1"
-                    onClick={handleSave}
-                    disabled={saving}
-                  >
+                  <Button variant="primary" className="flex-1" onClick={handleSave} disabled={saving}>
                     <Save className="w-4 h-4" />
                     {saving ? "Saving..." : "Save & Publish"}
                   </Button>
@@ -639,12 +910,7 @@ export default function TextEditor({
                   />
                   {error && <p className="text-sm text-destructive">{error}</p>}
                   <div className="flex gap-3 pt-2">
-                    <Button
-                      variant="primary"
-                      className="flex-1"
-                      onClick={handleSave}
-                      disabled={saving}
-                    >
+                    <Button variant="primary" className="flex-1" onClick={handleSave} disabled={saving}>
                       <Save className="w-4 h-4" />
                       {saving ? "Saving..." : "Save & Publish"}
                     </Button>
@@ -667,9 +933,7 @@ export default function TextEditor({
             </CardHeader>
             <CardContent>
               <div className="space-y-4 p-6 bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border border-border min-h-[500px]">
-                <pre className="text-sm whitespace-pre-wrap break-words text-foreground">
-                  {rawJson}
-                </pre>
+                <pre className="text-sm whitespace-pre-wrap break-words text-foreground">{rawJson}</pre>
               </div>
               <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-sm text-amber-900">
@@ -680,14 +944,8 @@ export default function TextEditor({
           </Card>
         </div>
       )}
-      {/* Hidden file input for Upload buttons */}
-      <input
-        type="file"
-        accept="image/*"
-        ref={fileInputRef}
-        onChange={handleUploadFile}
-        className="hidden"
-      />
+
+      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleUploadFile} className="hidden" />
     </div>
   );
 }

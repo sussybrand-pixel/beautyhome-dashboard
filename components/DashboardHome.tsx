@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Card, CardHeader, CardContent } from "./Card";
 import { Button } from "./Button";
 import { Image, FileText, Settings, Clock } from "lucide-react";
@@ -35,7 +35,7 @@ function DashboardHome({ onNavigate }: DashboardHomeProps) {
   const kpiData = useMemo(() => {
     return [
       {
-        label: "Images in Gallery",
+        label: "Portfolio Items",
         value: data?.imagesCount?.toString() || "0",
         icon: Image,
         color: "text-primary",
@@ -60,27 +60,19 @@ function DashboardHome({ onNavigate }: DashboardHomeProps) {
         icon: FileText,
       }));
     if (!items.length) {
-      return [
-        {
-          action: "No edits yet",
-          time: "—",
-          icon: FileText,
-        },
-      ];
+      return [{ action: "No edits yet", time: "N/A", icon: FileText }];
     }
     return items;
   }, [data]);
 
   const quickActions = [
     { label: "Edit Content", icon: FileText, page: "content", color: "primary" },
-    { label: "Manage Images", icon: Image, page: "images", color: "gold" },
+    { label: "Manage Portfolio", icon: Image, page: "images", color: "gold" },
     { label: "Settings", icon: Settings, page: "settings", color: "secondary" },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Top banner removed per request */}
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {kpiData.map((kpi, index) => {
           const Icon = kpi.icon;
@@ -132,6 +124,7 @@ function DashboardHome({ onNavigate }: DashboardHomeProps) {
                   );
                 })}
               </div>
+              {error && <p className="text-sm text-destructive mt-3">{error}</p>}
             </CardContent>
           </Card>
         </div>
