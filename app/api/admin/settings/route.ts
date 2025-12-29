@@ -1,95 +1,70 @@
-import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
-import { SITE_ORIGIN } from "@/lib/api";
+import { NextResponse } from "next/server"
 
-const defaultSettings = {
-  admin: {
-    username: "emma ville academy",
-    // bcrypt hash for ChristisKing8
-    passwordHash: "$2a$10$jAqm0vQ9d3JongjNrqUgc.EL4Ntwaz0U0Olqo7AXlTCv9oughtdw2",
-  },
-  profile: {
-    name: "Admin",
-    email: "admin@emmavilleacademy.com",
-    role: "Administrator",
-  },
-  general: {
-    siteName: "Emmaville Academy",
-    tagline: "Excellence in Education",
-    phone: "+2348186281225",
-    address: "BX4 3RD Avenue, Federal Housing Estate, Port Harcourt, Nigeria",
-    website: "https://www.emmavilleacademy.com",
-    email: "emmavilleacademy@gmail.com",
-  },
-};
+const BLOB_BUCKET = process.env.NEXT_PUBLIC_BLOB_BUCKET || process.env.BLOB_BUCKET || "susan-makeup-artist-website-blob"
+const BLOB_BASE =
+  process.env.NEXT_PUBLIC_BLOB_BASE_URL || process.env.BLOB_BASE_URL || `https://${BLOB_BUCKET}.public.blob.vercel-storage.com`
+const BLOB_TOKEN =
+  process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN ||
+  process.env.NEXT_PUBLIC_BLOB_RW_TOKEN ||
+  process.env.BLOB_READ_WRITE_TOKEN ||
+  process.env.BLOB_READ_WRITE_TOKEN
 
-async function getSettings() {
-  try {
-    const res = await fetch(`${SITE_ORIGIN}/api/content/settings`, { cache: "no-store" });
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(`Settings fetch failed: ${res.status} ${msg}`);
-    }
-    return res.json();
-  } catch (err) {
-    console.error("Settings GET error; using defaults", err);
-    return defaultSettings;
-  }
+function blobUrl() {
+  return `${BLOB_BASE}/content/settings.json`
 }
 
-async function saveSettings(body: any) {
-  const res = await fetch(`${SITE_ORIGIN}/api/content/settings`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data?.error || `Unable to save settings (status ${res.status})`);
-  }
-  return res.json();
+const defaultSettings = {
+  profile: { name: "BeautyHome Admin", email: "admin@beautyhomebysuzain.com", role: "Administrator" },
+  admin: { username: "beautyhome admin" },
+  general: {
+    siteName: "BeautyHomeBySuzain",
+    tagline: "Luxury Bridal & Glam Makeup Artist",
+    phone: "+44 7523 992614",
+    email: "admin@beautyhomebysuzain.com",
+    address: "London · Manchester · Birmingham · Leeds · Sheffield · Bradford | Travel Worldwide",
+    website: "https://beautyhomebysuzain.com",
+  },
 }
 
 export async function GET() {
   try {
-    const settings = await getSettings();
-    return NextResponse.json(settings);
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to load settings" },
-      { status: 500 },
-    );
+    const res = await fetch(blobUrl(), { cache: "no-store" })
+    if (res.ok) {
+      const data = await res.json()
+      return NextResponse.json(data)
+    }
+  } catch {
+    /* ignore and return defaults */
   }
+  return NextResponse.json(defaultSettings)
 }
 
 export async function PUT(req: Request) {
+  if (!BLOB_TOKEN) {
+    return NextResponse.json({ error: "Blob token not configured" }, { status: 500 })
+  }
+  const payload = await req.json().catch(() => null)
+  if (!payload) {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+  }
   try {
-    const incoming = await req.json();
-    const current = await getSettings();
-
-    // Merge profile/general
-    const next = {
-      ...current,
-      profile: { ...current?.profile, ...incoming.profile },
-      general: { ...current?.general, ...incoming.general },
-      admin: { ...current?.admin },
-    };
-
-    // Handle admin updates
-    if (incoming.admin?.username) {
-      next.admin.username = incoming.admin.username;
+    const res = await fetch(blobUrl(), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${BLOB_TOKEN}`,
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => "")
+      throw new Error(text || "Failed to save settings")
     }
-    if (incoming.admin?.newPassword) {
-      const hash = await bcrypt.hash(incoming.admin.newPassword, 10);
-      next.admin.passwordHash = hash;
-    }
-
-    await saveSettings(next);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json(payload)
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to save settings" },
       { status: 500 },
-    );
+    )
   }
 }
