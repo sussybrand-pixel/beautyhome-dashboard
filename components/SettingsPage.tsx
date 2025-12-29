@@ -108,7 +108,7 @@ function SettingsPage({ onSave }: SettingsPageProps) {
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-primary to-primary/90 rounded-xl p-8 text-white shadow-lg">
         <h1 className="text-white mb-2">Settings</h1>
-        <p className="text-white/90">Manage your account and school information</p>
+        <p className="text-white/90">Manage your account and BeautyHomeBySuzain information</p>
         {loading && <p className="text-white/80 text-sm mt-2">Loading settings...</p>}
         {error && <p className="text-red-200 text-sm mt-2">{error}</p>}
         {success && <p className="text-emerald-100 text-sm mt-2">{success}</p>}
@@ -133,12 +133,28 @@ function SettingsPage({ onSave }: SettingsPageProps) {
               </div>
             </div>
 
-            <Input label="Full Name" id="adminName" value={adminName} onChange={(e) => setAdminName(e.target.value)} />
-            <Input label="Username" id="adminUsername" value={adminUsername} onChange={(e) => setAdminUsername(e.target.value)} />
+            <Input
+              label="Full Name"
+              id="adminName"
+              value={adminName || "BeautyHome Admin"}
+              onChange={(e) => setAdminName(e.target.value)}
+            />
+            <Input
+              label="Username"
+              id="adminUsername"
+              value={adminUsername || "beautyhome admin"}
+              onChange={(e) => setAdminUsername(e.target.value)}
+            />
 
-            <Input label="Email Address" id="adminEmail" type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} />
+            <Input
+              label="Email Address"
+              id="adminEmail"
+              type="email"
+              value={adminEmail || "admin@beautyhomebysuzain.com"}
+              onChange={(e) => setAdminEmail(e.target.value)}
+            />
 
-            <Input label="Role" id="role" value={role} onChange={(e) => setRole(e.target.value)} />
+            <Input label="Role" id="role" value={role || "Administrator"} onChange={(e) => setRole(e.target.value)} />
 
             <Button variant="primary" className="w-full" onClick={saveProfile}>Save Profile Changes</Button>
           </CardContent>
@@ -209,34 +225,65 @@ function SettingsPage({ onSave }: SettingsPageProps) {
 
       <Card>
         <CardHeader depth>
-          <h3 className="text-white">School Contact Information</h3>
+          <h3 className="text-white">Site Contact Information</h3>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-6">
-              <Input label="Site Name" id="siteName" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
-              <Input label="Tagline" id="tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} />
+              <Input
+                label="Site Name"
+                id="siteName"
+                value={siteName || "BeautyHomeBySuzain"}
+                onChange={(e) => setSiteName(e.target.value)}
+              />
+              <Input
+                label="Tagline"
+                id="tagline"
+                value={tagline || "Luxury Bridal & Glam Makeup Artist"}
+                onChange={(e) => setTagline(e.target.value)}
+              />
 
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-primary mt-3" />
-                <Input label="Phone Number" id="schoolPhone" value={schoolPhone} onChange={(e) => setSchoolPhone(e.target.value)} />
+                <Input
+                  label="Phone Number"
+                  id="schoolPhone"
+                  value={schoolPhone || "+44 7523 992614"}
+                  onChange={(e) => setSchoolPhone(e.target.value)}
+                />
               </div>
 
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-primary mt-3" />
-                <Input label="Email Address" id="schoolEmail" type="email" value={schoolEmail} onChange={(e) => setSchoolEmail(e.target.value)} />
+                <Input
+                  label="Email Address"
+                  id="schoolEmail"
+                  type="email"
+                  value={schoolEmail || "admin@beautyhomebysuzain.com"}
+                  onChange={(e) => setSchoolEmail(e.target.value)}
+                />
               </div>
             </div>
 
             <div className="space-y-6">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary mt-3" />
-                <Input label="Physical Address" id="schoolAddress" value={schoolAddress} onChange={(e) => setSchoolAddress(e.target.value)} />
+                <Input
+                  label="Physical Address"
+                  id="schoolAddress"
+                  value={schoolAddress || "London · Manchester · Birmingham · Leeds · Sheffield · Bradford"}
+                  onChange={(e) => setSchoolAddress(e.target.value)}
+                />
               </div>
 
               <div className="flex items-start gap-3">
                 <Globe className="w-5 h-5 text-primary mt-3" />
-                <Input label="Website URL" id="schoolWebsite" value={schoolWebsite} onChange={(e) => setSchoolWebsite(e.target.value)} />
+                <Input
+                  label="Website URL"
+                  id="schoolWebsite"
+                  value={schoolWebsite || "https://beautyhomebysuzain.com"}
+                  onChange={(e) => setSchoolWebsite(e.target.value)}
+                />
               </div>
             </div>
           </div>
