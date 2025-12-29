@@ -41,7 +41,8 @@ export async function getSection(section: string) {
     const res = await fetch(blobUrl(`content/${section}.json`), { cache: "no-store" });
     if (res.ok) return res.json();
   }
-  throw new Error("Failed to fetch section");
+  // If nothing exists yet, return an empty scaffold so the dashboard can save it
+  return defaultSection(section);
 }
 
 export async function updateSection(section: string, data: any) {
@@ -104,4 +105,40 @@ export async function uploadImage(file: File) {
     throw new Error(data?.error || "Upload failed");
   }
   return res.json();
+}
+
+function defaultSection(section: string) {
+  switch (section) {
+    case "home":
+      return {
+        hero: { eyebrow: "", title: "", subtitle: "", slides: [] },
+        highlights: [],
+      };
+    case "services":
+      return { hero: { title: "", subtitle: "" }, services: [] };
+    case "packages":
+      return { packages: [] };
+    case "about":
+      return {
+        about: { title: "", tagline: "", bio: "", travelNote: "", image: "", imageAlt: "" },
+        locations: [],
+        training: [],
+      };
+    case "portfolio":
+      return { items: [] };
+    case "contact":
+      return {
+        phone: "",
+        whatsapp: "",
+        whatsappLink: "",
+        email: "",
+        social: { instagram: "", facebook: "" },
+        ctaLabel: "",
+        ctaLink: "",
+        address: { lines: [] },
+        travelNote: "",
+      };
+    default:
+      return {};
+  }
 }
