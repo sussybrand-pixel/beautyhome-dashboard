@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { Navbar } from "@/components/Navbar";
 import { Toast } from "@/components/Toast";
@@ -9,6 +9,7 @@ import ContentManager from "@/components/ContentManager";
 import TextEditor from "@/components/TextEditor";
 import ImageManager from "@/components/ImageManager";
 import SettingsPage from "@/components/SettingsPage";
+import BookingsPage from "@/components/BookingsPage";
 
 export default function DashboardApp() {
   const [currentPage, setCurrentPage] = useState<string>("dashboard");
@@ -16,6 +17,21 @@ export default function DashboardApp() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
+  const [pendingCount, setPendingCount] = useState<number | undefined>(undefined);
+
+  const refreshPending = async () => {
+    try {
+      const res = await fetch("/api/bookings/count/pending", { credentials: "include" });
+      const data = await res.json();
+      if (res.ok) setPendingCount(data.count);
+    } catch {
+      /* ignore badge errors */
+    }
+  };
+
+  useEffect(() => {
+    refreshPending();
+  }, []);
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
     setToastMessage(message);
@@ -38,7 +54,7 @@ export default function DashboardApp() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar currentPage={currentPage} onNavigate={handleNavigate} />
+      <Sidebar currentPage={currentPage} onNavigate={handleNavigate} pendingCount={pendingCount} />
       <Navbar />
 
       <main className="ml-64 mt-20 p-8 space-y-6">
@@ -49,6 +65,7 @@ export default function DashboardApp() {
         )}
         {currentPage === "images" && <ImageManager onDelete={handleDeleteImage} />}
         {currentPage === "settings" && <SettingsPage onSave={handleSaveSettings} />}
+        {currentPage === "bookings" && <BookingsPage onRefreshPending={refreshPending} />}
       </main>
 
       <Toast

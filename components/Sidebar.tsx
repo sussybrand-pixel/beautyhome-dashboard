@@ -4,13 +4,15 @@ interface SidebarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
   onLogout?: () => void;
+  pendingCount?: number;
 }
 
-export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
+export function Sidebar({ currentPage, onNavigate, onLogout, pendingCount }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'content', label: 'Content Manager', icon: FileText },
     { id: 'images', label: 'Portfolio Manager', icon: Image },
+    { id: 'bookings', label: 'Bookings', icon: FileText },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -46,6 +48,11 @@ export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
             >
               <Icon className="w-5 h-5" />
               <span>{item.label}</span>
+              {item.id === 'bookings' && pendingCount !== undefined && pendingCount > 0 && (
+                <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
+                  {pendingCount}
+                </span>
+              )}
             </button>
           );
         })}
