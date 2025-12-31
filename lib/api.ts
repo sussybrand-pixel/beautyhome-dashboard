@@ -1,7 +1,23 @@
-// Mirror Emmaville pattern: direct to live site APIs
+// Mirror Emmaville pattern: live site APIs, with blob uploads when available
 export const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN || "https://beautyhomebysuzain.com";
 export const BASE = `${SITE_ORIGIN}/api/content`;
 export const UPLOAD_BASE = `${SITE_ORIGIN}/api/upload`;
+
+const BLOB_BUCKET = process.env.NEXT_PUBLIC_BLOB_BUCKET || "susan-makeup-artist-website-blob";
+export const BLOB_BASE_URL =
+  process.env.NEXT_PUBLIC_BLOB_BASE_URL || `https://${BLOB_BUCKET}.public.blob.vercel-storage.com`;
+export const BLOB_TOKEN =
+  process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN ||
+  process.env.NEXT_PUBLIC_BLOB_RW_TOKEN ||
+  process.env.BLOB_READ_WRITE_TOKEN;
+
+const hasBlob = Boolean(BLOB_BASE_URL && BLOB_TOKEN);
+
+function blobUrl(key: string) {
+  const trimmed = key.startsWith("/") ? key.slice(1) : key;
+  const encoded = encodeURI(trimmed);
+  return `${BLOB_BASE_URL}/${encoded}`;
+}
 
 // Helper to prefix relative asset paths with the site origin
 export function withSite(path: string) {
@@ -38,6 +54,26 @@ export async function updateSection(section: string, data: any) {
 }
 
 export async function uploadImage(file: File) {
+  // Prefer direct blob upload when available
+  if (hasBlob) {
+    const key = `media/${Date.now()}-${file.name}`;
+    const url = blobUrl(key);
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+        Authorization: `Bearer ${BLOB_TOKEN}`,
+      },
+      body: file,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(text || "Upload failed");
+    }
+    return { url: `${BLOB_BASE_URL}/${key}` };
+  }
+
+  // Fall back to site upload API
   const form = new FormData();
   form.append("file", file);
   const res = await fetch(UPLOAD_BASE, {
